@@ -65,7 +65,7 @@ Default vector store and chunking configuration are as follows:
 - Overlap: 256
 - Database name: example_db
 - Table name: embeddings
-- Table columns: id (UUID), text (TEXT), metadata (JSONB), vector (VECTOR[1536])
+- Table columns: id (UUID), text (TEXT), metadata (JSONB), vector (VECTOR[512])
 
 ### 5. Test the ingestion workflow
 Place your .pdf files in the `documents` folder (volume mounted in the container) and run the workflow to ingest.
