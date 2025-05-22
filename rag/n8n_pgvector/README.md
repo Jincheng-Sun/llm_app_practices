@@ -73,3 +73,10 @@ Click `Open Chat` in the UI to start testing the workflow with some questions.
 
 ## Notes
 When you customize this application, make sure the N8N workflow changes align with the table schema and compose file
+
+## References
+[Part 1: Setup with PostgreSQL and pgvector](https://dev.to/yukaty/setting-up-postgresql-with-pgvector-using-docker-hcl)
+
+[PGVector Vector Store node](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.vectorstorepgvector/)
+
+[This RAG AI Agent with n8n + Supabase is the Real Deal](https://youtu.be/PEI_ePNNfJQ?si=Pi9lG0L9vAtWPXUG)
