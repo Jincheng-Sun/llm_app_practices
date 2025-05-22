@@ -1,2 +1,2 @@
 # llm_app_practices
-A practice
+A repo to archive all my personal LLM application building practices.
