@@ -55,6 +55,10 @@ Import the sample workflow from current directory: `RAG_example_with_N8N.json`.
 Configure the following credentials inside n8n:
 - Azure OpenAI Account credentials (for embedding and chat models)
 - PostgreSQL credentials (for vector store)
+  - Host: db
+  - Database: example_db
+  - User: postgres
+  - Password: password
 
 Default vector store and chunking configuration are as follows:
 - Chunk size: 1024
