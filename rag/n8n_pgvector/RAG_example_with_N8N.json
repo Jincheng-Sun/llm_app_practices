@@ -1,0 +1,627 @@
+{
+  "name": "RAG example with N8N",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -6820,
+        260
+      ],
+      "id": "7e849e3d-4e14-4a4e-bbc6-d3a8f2cbac4b",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "38708aec-76d7-43be-bbb2-fb6bb1c46546",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -7320,
+        1280
+      ],
+      "webhookId": "089e38ab-4eee-4c34-aa5d-54cf4a8f53b7",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "### Prerequisite\n- Mount local machine's document folder to /tmp/documents\n- Create an embedding model deployment in Azure AI Foundry using \"text-embedding-3-small\" as the base model.\n\n### Vector store setting\n- Chunking size: 1024\n\n",
+        "height": 240,
+        "width": 620
+      },
+      "id": "2e6b264f-c48b-4459-be30-7145edc8bef6",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        220,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant that only answer the domain specific question within your knowledge, if you don't know the field, use `document_database` tool to fetch related documents, if you cannot find related knowledge, just answer you don't know."
+        }
+      },
+      "id": "a2564eb5-67b0-4b6c-8d3d-0f846589e39e",
+      "name": "Question & Answer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -7040,
+        1280
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "content": "### 2. Document retrieval chat example\n1. Chat message along with user defined prompt, system prompt and predefined n8n module prompt is sent to the chat model\n2. Chat model summarize the input and generate a query to call the vector store tool to fetch **top 5** closest results\n3. step 1 + 2 results feed into the chat model again to generate the final result\n",
+        "height": 727,
+        "width": 894,
+        "color": 7
+      },
+      "id": "40ed9710-0073-4446-b41f-b5ca19fe17a5",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7380,
+        1100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -6380,
+        260
+      ],
+      "id": "af6f90de-1d90-4063-ada4-1b48ec09cbf8",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -6960,
+        1500
+      ],
+      "id": "ac8a958d-8468-4f0c-9609-0826cced21d4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -6740,
+        1700
+      ],
+      "id": "854647e8-2bd7-4a28-9b4b-b9d63431703b",
+      "name": "Embeddings Azure OpenAI2",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "g0iSRhg2AvrEgnbL",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### 1. Vector store ingestion workflow\n1. load documents (only PDF) from mounted folder, extract text part\n2. split the text into chunks \n3. feed into Azure embedding model and get embedding result\n4. insert the embedding and metadata into Postgres vector store",
+        "height": 1007,
+        "width": 1614,
+        "color": 7
+      },
+      "id": "a1acc0cf-5463-4167-8369-a0a157772558",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7109,
+        -47
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chunkSize": 1024,
+        "chunkOverlap": 256,
+        "options": {}
+      },
+      "id": "3ce5feee-d272-4e44-a7a6-e5215207a164",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        -5952,
+        680
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -6160,
+        480
+      ],
+      "id": "ea732dda-4dc0-4b98-9120-5114784c0212",
+      "name": "Embeddings model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "g0iSRhg2AvrEgnbL",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -7080,
+        1500
+      ],
+      "id": "52968119-fda8-4f31-90ae-bf1ca4b26fbf",
+      "name": "Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "g0iSRhg2AvrEgnbL",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "4202b5f5-aa75-4fe8-a305-638b60c552d5",
+      "name": "Text data loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        -6040,
+        482.5
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "embeddings",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.1,
+      "position": [
+        -6140,
+        260
+      ],
+      "id": "d188f1df-c833-4592-a0a4-93450a3f5442",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "5ob7UwdoASZq1wdy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "/tmp/documents/*.pdf",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -6600,
+        260
+      ],
+      "id": "356b18fd-dbcc-4690-a4eb-047b9d6f190b",
+      "name": "Load pdf"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "document_database",
+        "toolDescription": "use this tool to fetch topic related documents",
+        "tableName": "embeddings",
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.1,
+      "position": [
+        -6840,
+        1500
+      ],
+      "id": "5c977a04-4f50-4d43-9725-9f58a11110fe",
+      "name": "Postgres PGVector Store1",
+      "credentials": {
+        "postgres": {
+          "id": "5ob7UwdoASZq1wdy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -5660,
+        1660
+      ],
+      "id": "9fc002f5-fc02-4a75-ba24-cd07e2104365",
+      "name": "Retriever Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "g0iSRhg2AvrEgnbL",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "financial_model_docs",
+        "description": "use this tool to fetch topic related documents",
+        "topK": 5
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        -5860,
+        1460
+      ],
+      "id": "07cb7aa2-ca89-4342-94af-9b25820efe83",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -5980,
+        1460
+      ],
+      "id": "ced72263-e4f2-45a3-9075-1db86fc1a247",
+      "name": "Simple Memory 2"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -6100,
+        1460
+      ],
+      "id": "ce7730bc-998e-4f86-a478-2f8288d9a19b",
+      "name": "Chat Model 2",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "g0iSRhg2AvrEgnbL",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant that only answer the domain specific question within your knowledge, if you don't know the field, use `document_database` tool to fetch related documents, if you cannot find related knowledge, just answer you don't know."
+        }
+      },
+      "id": "6760017e-f120-4956-9178-0bc0c29d410d",
+      "name": "Question & Answer 2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -5980,
+        1280
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -5860,
+        1860
+      ],
+      "id": "ed48d3c6-acf1-4fe5-97fd-2faaf9094305",
+      "name": "Embeddings Azure OpenAI",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "g0iSRhg2AvrEgnbL",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### 3. RAG example\n1. Chat message along with user defined prompt, system prompt and predefined n8n module prompt is sent to the chat model\n2. Chat model summarize the input and generate a query to call the vector store tool to fetch **top 5** closest results\n3. A retriever model summarizes the 5 documents\n3. step 1 + 3 returns feed into the chat model again to generate the final result",
+        "height": 927,
+        "width": 894,
+        "color": 7
+      },
+      "id": "4c434b31-c38e-444c-a270-a59d49d743de",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6300,
+        1100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "tableName": "embeddings",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.1,
+      "position": [
+        -5960,
+        1660
+      ],
+      "id": "ef2eb661-58bc-4c29-a8b6-e3303c8af643",
+      "name": "Postgres PGVector Store3",
+      "credentials": {
+        "postgres": {
+          "id": "5ob7UwdoASZq1wdy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Prerequisite\n- mount the to-be-ingested document folder on local machine to the N8N container's /tmp/documents folder\n- Create an embedding model deployment on Azure AI Foundry with dimension 512\n\n### Vector store and chunking settings\n- chunking size: 1024\n- overlap: 256\n- db name: example_db\n- table name: embeddings\n- columns: id, text, metadata, vector",
+        "height": 280,
+        "width": 540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6920,
+        560
+      ],
+      "id": "11793dd5-151e-49a2-9fa8-92a11512a3de",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Load pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Azure OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Text data loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings model": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text data loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load pdf": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retriever Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Question & Answer 2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory 2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Question & Answer 2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model 2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question & Answer 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Azure OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store3",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store3": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "192a44cb-d34c-4e60-92bf-abd78797fa08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9a9adf1941a00dd6651250f02ad5e980ffb111f181e25a690b244c0ad7abc117"
+  },
+  "id": "X1urfGNb2N5dCbKP",
+  "tags": []
+}
