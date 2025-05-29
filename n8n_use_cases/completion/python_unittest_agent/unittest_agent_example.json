@@ -1,0 +1,501 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        140
+      ],
+      "id": "7dd00f3d-63e9-4589-b635-99e2d58f5e3b",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the following python code, can you write the corresponding unit test code that is executable by the following command: python unittest?\n\nThe code is:\n\n{{ $json.raw_code }}",
+        "options": {
+          "systemMessage": "You are a senior Python QA engineer working in a software company, in the current project, your day to day work is to review colleague's code and define test  scenarios, write unit test code based on their code and execute on your end to make sure all the test passes.\n\nPlease return as less verbal comment as possible, and wrap the code part in ```python``` format"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        720,
+        140
+      ],
+      "id": "dae42c81-09b4-431e-a6ef-4af1b274e823",
+      "name": "AI Agent",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "filePath": "={{ $json.path }}",
+        "binaryPropertyName": "={{ $json.name }}",
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        120,
+        180
+      ],
+      "id": "51b7b058-3c98-47b6-97a6-441a274cf310",
+      "name": "download_file",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "31d5a553-9746-493f-b2c5-7d7c35495578",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "dir",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "0ed27e88-a6cb-4a13-93b3-6bf4680c231f",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "r'^(?!test$|tests$).*$'",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "8cd13f97-e821-4c8d-af5a-73493627a106",
+      "name": "get_sub_dir"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "93e2c109-18e0-445c-b80f-eecc5b0b1c61",
+              "name": "path",
+              "value": "/src",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -760,
+        160
+      ],
+      "id": "eb8f1a5f-4779-421e-89d1-40744266bfe8",
+      "name": "source_code_path"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        700,
+        360
+      ],
+      "id": "6191ac8f-992e-41d5-beeb-30541b6b2607",
+      "name": "gpt-4.1"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "filePath": "=tests/{{ $('download_file').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "test_code",
+        "commitMessage": "=Add unit test {{ $('Convert to .py File').item.binary.test_code.fileName}}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1860,
+        120
+      ],
+      "id": "d576b5e1-da29-4eb1-abfd-b1f13aa95b78",
+      "name": "upload_to_repo"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2457c0a-e57c-4696-8123-81bed23d7535",
+              "name": "output",
+              "value": "={{ $('AI Agent').item.json.output.match(/```python\\s*([\\s\\S]*?)```/)?.[1]?.trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1320,
+        120
+      ],
+      "id": "7292b339-a668-432d-95d6-bd58f85abd50",
+      "name": "parse_code"
+    },
+    {
+      "parameters": {
+        "operation": "fetch"
+      },
+      "type": "n8n-nodes-base.git",
+      "typeVersion": 1,
+      "position": [
+        -980,
+        940
+      ],
+      "id": "14606db4-ef03-4492-a528-ebe5e02b2484",
+      "name": "Git"
+    },
+    {
+      "parameters": {
+        "command": "git pull "
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        780
+      ],
+      "id": "89bb5113-0c57-4ba1-b705-a2dfc5a242d7",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "",
+          "mode": "name"
+        },
+        "filePath": "={{ $json.path }}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        180
+      ],
+      "id": "68367c78-76a1-452b-a336-c66e63a092fb",
+      "name": "list_repo_files",
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "31d5a553-9746-493f-b2c5-7d7c35495578",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": ".py",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "f1b3c335-8ab9-497d-8c0e-a83a062b865b",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "test",
+              "operator": {
+                "type": "string",
+                "operation": "notStartsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -140,
+        180
+      ],
+      "id": "439ebae7-9aad-4b9b-89fc-ce2da64cb92a",
+      "name": "filter_src_code"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "={{ $json.name }}",
+        "destinationKey": "raw_code",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        420,
+        140
+      ],
+      "id": "fd8999b7-9bc8-41fb-8cfc-13b083ed577d",
+      "name": "convert_to_str",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        820,
+        360
+      ],
+      "id": "5ee22d22-4a59-4b85-8479-4fe474d11429",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "=output",
+        "binaryPropertyName": "=test_code",
+        "options": {
+          "fileName": "=test_{{ $('download_file').item.json.name }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1580,
+        120
+      ],
+      "id": "478107dc-c86e-4c7a-bd58-c3a6cf6336fc",
+      "name": "Convert to .py File",
+      "alwaysOutputData": true,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.jenkinsTool",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        380
+      ],
+      "id": "dda7e7dd-8ed3-4404-a3ee-3cb4db1ba91c",
+      "name": "Jenkins"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "source_code_path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "parse_code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download_file": {
+      "main": [
+        [
+          {
+            "node": "convert_to_str",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_sub_dir": {
+      "main": [
+        [
+          {
+            "node": "list_repo_files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "source_code_path": {
+      "main": [
+        [
+          {
+            "node": "list_repo_files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse_code": {
+      "main": [
+        [
+          {
+            "node": "Convert to .py File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_repo_files": {
+      "main": [
+        [
+          {
+            "node": "get_sub_dir",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "filter_src_code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter_src_code": {
+      "main": [
+        [
+          {
+            "node": "download_file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "convert_to_str": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to .py File": {
+      "main": [
+        [
+          {
+            "node": "upload_to_repo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jenkins": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "04d7b5c0675645a744360498e92f593a6f6bab2486d4791fb8ef773d73b5ed1d"
+  }
+}
